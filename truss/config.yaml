@@ -1,0 +1,75 @@
+# Orpheus TTS – TRT-LLM Engine Builder Configuration
+# Based on: https://github.com/basetenlabs/truss-examples/tree/main/orpheus-best-performance
+#
+# Target: H100 MIG 40GB – 16-24 concurrent real-time streams
+# Engine: TRT-LLM with fp8_kv quantization
+# Model:  baseten/orpheus-3b-0.1-ft (fine-tuned, named voices)
+
+model_name: Orpheus-3b Best Performance
+python_version: py39
+
+resources:
+  # H100 MIG 40GB – official recommended hardware for Orpheus TTS.
+  # Model is bottlenecked by CPU clock speed; full H100 upgrade is not effective.
+  accelerator: H100_40GB
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+
+secrets:
+  hf_access_token: null
+
+# TRT-LLM Engine Builder configuration
+# This triggers Baseten's optimized TRT-LLM compilation pipeline
+trt_llm:
+  build:
+    base_model: decoder
+    checkpoint_repository:
+      repo: baseten/orpheus-3b-0.1-ft
+      revision: b9eb57a06083cb9e5a083885fad991aa79c0bd24
+      source: HF
+    max_batch_size: 256
+    # Higher max_num_tokens allows filling full batch in single iteration
+    max_num_tokens: 16384
+    # 32768 ≈ 300s of audio; model typically produces max ~120s
+    max_seq_len: 32768
+    num_builder_gpus: 1
+    quantization_config:
+      # TODO: Generate a typical dataset (input + output tokens) in target language
+      # or disable quantization for other languages
+      calib_dataset: "cnn_dailymail"
+    plugin_configuration:
+      use_fp8_context_fmha: true
+    quantization_type: fp8_kv
+    tensor_parallel_count: 1
+  runtime:
+    enable_chunked_context: true
+    kv_cache_free_gpu_mem_fraction: 0.90
+    batch_scheduler_policy: max_utilization
+
+# Build commands: install git-lfs and clone SNAC model during build
+build_commands:
+  - apt-get update && apt-get install git git-lfs -y
+  - git lfs install
+  - git clone https://huggingface.co/hubertsiuzdak/snac_24khz /app/snac_24khz
+
+environment_variables:
+  ENABLE_EXECUTOR_API: "1"
+
+model_metadata:
+  repo_id: canopylabs/orpheus-3b-0.1-ft
+  example_model_input:
+    max_tokens: 10000
+    prompt: >-
+      In todays fast-paced world, finding balance between work and personal
+      life is more important than ever. With the constant demands of
+      technology, remote communication,
+    voice: tara
+  tags:
+    - force-legacy-api-non-openai-compatible
+
+requirements:
+  - --extra-index-url https://download.pytorch.org/whl/cu128
+  - torch==2.7.1
+  - snac==1.2.1
+  - batched==0.1.4

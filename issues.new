@@ -1,0 +1,289 @@
+E0227 17:52:12.100000 706 torch/_inductor/runtime/triton_heuristics.py:539]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+E0227 17:52:12.100000 706 torch/_inductor/runtime/triton_heuristics.py:539]   File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 89, in get_ptx_version_from_options
+
+E0227 17:52:12.100000 706 torch/_inductor/runtime/triton_heuristics.py:539]     ptx_version = ptx_get_version(cuda_version)
+
+E0227 17:52:12.100000 706 torch/_inductor/runtime/triton_heuristics.py:539]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+E0227 17:52:12.100000 706 torch/_inductor/runtime/triton_heuristics.py:539]   File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 82, in ptx_get_version
+
+E0227 17:52:12.100000 706 torch/_inductor/runtime/triton_heuristics.py:539]     raise RuntimeError("Triton only support CUDA 10.0 or higher, but got CUDA version: " + cuda_version)
+
+E0227 17:52:12.100000 706 torch/_inductor/runtime/triton_heuristics.py:539] RuntimeError: Triton only support CUDA 10.0 or higher, but got CUDA version: 13.0
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539] Triton compilation failed: triton_poi_fused__weight_norm_interface_add_convolution_mul_pow_reciprocal_sin_tanh_view_44
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539] def triton_poi_fused__weight_norm_interface_add_convolution_mul_pow_reciprocal_sin_tanh_view_44(in_out_ptr0, in_ptr0, xnumel, XBLOCK : tl.constexpr):
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     xoffset = tl.program_id(0) * XBLOCK
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     xindex = xoffset + tl.arange(0, XBLOCK)[:]
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     xmask = xindex < xnumel
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     x0 = xindex
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     tmp0 = tl.load(in_out_ptr0 + (x0), xmask)
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     tmp1 = tl.load(in_ptr0 + (0))
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     tmp2 = tl.broadcast_to(tmp1, [XBLOCK])
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     tmp3 = tmp0 + tmp2
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     tmp4 = libdevice.tanh(tmp3)
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     tl.store(in_out_ptr0 + (x0), tmp4, xmask)
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539] 
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539] metadata: {'signature': {'in_out_ptr0': '*fp32', 'in_ptr0': '*fp32', 'xnumel': 'i32', 'XBLOCK': 'constexpr'}, 'device': 0, 'constants': {'XBLOCK': 256}, 'configs': [{(0,): [['tt.divisibility', 16]], (1,): [['tt.divisibility', 16]], (2,): [['tt.divisibility', 16]]}], 'device_type': 'cuda', 'num_warps': 4, 'num_stages': 1, 'debug': True, 'cc': 90}
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539] Traceback (most recent call last):
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]   File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/triton_heuristics.py", line 537, in _precompile_config
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     binary = triton.compile(*compile_args, **compile_kwargs)
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]   File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/compiler/compiler.py", line 284, in compile
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     next_module = compile_ir(module, metadata)
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]   File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 450, in <lambda>
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]   File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 317, in make_llir
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     ptx_version = get_ptx_version_from_options(options, self.target.arch)
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]   File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 89, in get_ptx_version_from_options
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     ptx_version = ptx_get_version(cuda_version)
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]   File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 82, in ptx_get_version
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539]     raise RuntimeError("Triton only support CUDA 10.0 or higher, but got CUDA version: " + cuda_version)
+
+E0227 17:52:12.100000 704 torch/_inductor/runtime/triton_heuristics.py:539] RuntimeError: Triton only support CUDA 10.0 or higher, but got CUDA version: 13.0
+
+Exception while loading model Traceback (most recent call last):
+  File "/app/model_wrapper.py", line 452, in load
+    self._load_impl()
+  File "/app/model_wrapper.py", line 505, in _load_impl
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/app/model/model.py", line 153, in <module>
+    model_snac = SnacModelBatched()
+                 ^^^^^^^^^^^^^^^^^^
+  File "/app/model/model.py", line 78, in __init__
+    self.compile()
+  File "/app/model/model.py", line 96, in compile
+    decoder(intermed.to(self.dtype_decoder))
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 663, in _fn
+    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 760, in _compile_fx_inner
+    raise InductorError(e, currentframe()).with_traceback(
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 745, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 1295, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 1197, in codegen_and_compile
+    compiled_fn = graph.compile_to_module().call
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/graph.py", line 2083, in compile_to_module
+    return self._compile_to_module()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/graph.py", line 2130, in _compile_to_module
+    mod = PyCodeCache.load_by_key_path(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/codecache.py", line 2747, in load_by_key_path
+    mod = _reload_python_module(key, path)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/compile_tasks.py", line 36, in _reload_python_module
+    exec(code, mod.__dict__, mod.__dict__)
+  File "/tmp/torchinductor_root/zm/czmmrdq3zqnxxes3ye75rexhuhdpmh7leaffpzvr6dxyukehbepa.py", line 3666, in <module>
+    async_compile.wait(globals())
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 424, in wait
+    self._wait_futures(scope)
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 445, in _wait_futures
+    scope[key] = result.result()
+                 ^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/codecache.py", line 3224, in result
+    return self.result_fn()
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 321, in get_result
+    kernel, elapsed_us = task.result()
+                         ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+torch._inductor.exc.InductorError: SubprocException: An exception occurred in a subprocess:
+
+Traceback (most recent call last):
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_worker/subproc_pool.py", line 337, in do_job
+    result = job()
+             ^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/compile_tasks.py", line 61, in _worker_compile_triton
+    kernel.precompile(warm_cache_only=True)
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/triton_heuristics.py", line 267, in precompile
+    self._precompile_worker()
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/triton_heuristics.py", line 296, in _precompile_worker
+    compile_results.append(self._precompile_config(c))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/triton_heuristics.py", line 537, in _precompile_config
+    binary = triton.compile(*compile_args, **compile_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/compiler/compiler.py", line 284, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 450, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 317, in make_llir
+    ptx_version = get_ptx_version_from_options(options, self.target.arch)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 89, in get_ptx_version_from_options
+    ptx_version = ptx_get_version(cuda_version)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 82, in ptx_get_version
+    raise RuntimeError("Triton only support CUDA 10.0 or higher, but got CUDA version: " + cuda_version)
+RuntimeError: Triton only support CUDA 10.0 or higher, but got CUDA version: 13.0
+
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+
+
+Traceback (most recent call last):
+  File "/app/model_wrapper.py", line 452, in load
+    self._load_impl()
+  File "/app/model_wrapper.py", line 505, in _load_impl
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/app/model/model.py", line 153, in <module>
+    model_snac = SnacModelBatched()
+                 ^^^^^^^^^^^^^^^^^^
+  File "/app/model/model.py", line 78, in __init__
+    self.compile()
+  File "/app/model/model.py", line 96, in compile
+    decoder(intermed.to(self.dtype_decoder))
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py", line 663, in _fn
+    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 760, in _compile_fx_inner
+    raise InductorError(e, currentframe()).with_traceback(
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 745, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 1295, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_fx.py", line 1197, in codegen_and_compile
+    compiled_fn = graph.compile_to_module().call
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/graph.py", line 2083, in compile_to_module
+    return self._compile_to_module()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/graph.py", line 2130, in _compile_to_module
+    mod = PyCodeCache.load_by_key_path(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/codecache.py", line 2747, in load_by_key_path
+    mod = _reload_python_module(key, path)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/compile_tasks.py", line 36, in _reload_python_module
+    exec(code, mod.__dict__, mod.__dict__)
+  File "/tmp/torchinductor_root/zm/czmmrdq3zqnxxes3ye75rexhuhdpmh7leaffpzvr6dxyukehbepa.py", line 3666, in <module>
+    async_compile.wait(globals())
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 424, in wait
+    self._wait_futures(scope)
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 445, in _wait_futures
+    scope[key] = result.result()
+                 ^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/codecache.py", line 3224, in result
+    return self.result_fn()
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/async_compile.py", line 321, in get_result
+    kernel, elapsed_us = task.result()
+                         ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+torch._inductor.exc.InductorError: SubprocException: An exception occurred in a subprocess:
+
+Traceback (most recent call last):
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/compile_worker/subproc_pool.py", line 337, in do_job
+    result = job()
+             ^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/compile_tasks.py", line 61, in _worker_compile_triton
+    kernel.precompile(warm_cache_only=True)
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/triton_heuristics.py", line 267, in precompile
+    self._precompile_worker()
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/triton_heuristics.py", line 296, in _precompile_worker
+    compile_results.append(self._precompile_config(c))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/torch/_inductor/runtime/triton_heuristics.py", line 537, in _precompile_config
+    binary = triton.compile(*compile_args, **compile_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/compiler/compiler.py", line 284, in compile
+    next_module = compile_ir(module, metadata)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 450, in <lambda>
+    stages["llir"] = lambda src, metadata: self.make_llir(src, metadata, options, capability)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 317, in make_llir
+    ptx_version = get_ptx_version_from_options(options, self.target.arch)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 89, in get_ptx_version_from_options
+    ptx_version = ptx_get_version(cuda_version)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/briton/venv/lib/python3.12/site-packages/triton/backends/nvidia/compiler.py", line 82, in ptx_get_version
+    raise RuntimeError("Triton only support CUDA 10.0 or higher, but got CUDA version: " + cuda_version)
+RuntimeError: Triton only support CUDA 10.0 or higher, but got CUDA version: 13.0
+
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+
+Trying shut down after failed model load.
+
+Shutting down
+
+Waiting for application shutdown.
+
+Application shutdown complete.
+
+Finished server process [71]
+
+[TensorRT-LLM][INFO] Number of tokens per blCleaning up: terminating the subprocess
+Listening for new logs...

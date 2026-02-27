@@ -1,0 +1,46 @@
+.header {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logoIcon {
+  font-size: 1.75rem;
+  color: #a78bfa;
+}
+
+.logoText {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.version {
+  font-size: 0.75rem;
+  color: #a5b4fc;
+  background: rgba(99,102,241,0.2);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: #c7d2fe;
+  font-size: 0.85rem;
+  margin: 0;
+}
