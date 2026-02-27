@@ -76,6 +76,7 @@ export function useWebSocketTTS() {
     const startAt = nextTimeRef.current > now ? nextTimeRef.current : now + 0.050
     source.start(startAt)
     nextTimeRef.current = startAt + audioBuffer.duration / playbackRateRef.current
+    console.log(`[tts] flush: ${merged.length} samples, ctx.state=${ctx.state}, startAt=${startAt.toFixed(3)}`)
   }
 
   const _cleanup = () => {
@@ -110,6 +111,7 @@ export function useWebSocketTTS() {
     unsubRefs.current.push(
       wsService.onAudio((slot, pcmInt16) => {
         if (slot !== 0 || sessionIdRef.current !== id) return
+        console.log(`[tts] audio chunk: slot=${slot} samples=${pcmInt16.length}`)
         const samples = int16ToFloat32(pcmInt16)
 
         pcmChunksRef.current.push(samples)

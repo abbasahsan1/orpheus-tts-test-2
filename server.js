@@ -179,6 +179,8 @@ wss.on('connection', (ws) => {
     let bytesReceived = 0
     let upstream = null
 
+    console.log(`[ws] slot ${slot} → POST ${BASETEN_URL} voice=${safeVoice} prompt="${prompt.slice(0, 60)}"`)
+
     try {
       upstream = await fetch(BASETEN_URL, {
         method: 'POST',
@@ -191,24 +193,32 @@ wss.on('connection', (ws) => {
         signal: controller.signal,
       })
 
+      console.log(`[ws] slot ${slot} ← HTTP ${upstream.status} (${Date.now() - startTime}ms)`)
+
       if (!upstream.ok) {
         const text = await upstream.text()
+        console.error(`[ws] slot ${slot} upstream error: ${upstream.status} ${text}`)
         send({ type: 'error', slot, message: `Upstream ${upstream.status}: ${text}` })
         active.delete(slot)
         return
       }
 
+      let chunkCount = 0
       for await (const chunk of upstream.body) {
         if (controller.signal.aborted) break
 
+        chunkCount++
         if (!ttfbSent) {
-          send({ type: 'ttfb', slot, ms: Date.now() - startTime })
+          const ttfb = Date.now() - startTime
+          console.log(`[ws] slot ${slot} first chunk: ${chunk.length} bytes (TTFB ${ttfb}ms)`)
+          send({ type: 'ttfb', slot, ms: ttfb })
           ttfbSent = true
         }
 
         bytesReceived += chunk.length
         sendAudio(slot, chunk)
       }
+      console.log(`[ws] slot ${slot} stream ended: ${chunkCount} chunks, ${bytesReceived} bytes total`)
 
       if (!controller.signal.aborted) {
         pendingOddByte.delete(slot)
@@ -218,13 +228,13 @@ wss.on('connection', (ws) => {
       }
     } catch (err) {
       if (err.name !== 'AbortError') {
-        console.error(`[ws] slot ${slot} error:`, err.message)
+        console.error(`[ws] slot ${slot} error:`, err.message, err.cause ? `cause: ${err.cause.message || err.cause}` : '')
         send({ type: 'error', slot, message: String(err.message) })
       }
     } finally {
       // Destroy upstream body stream to prevent half-open TCP sockets
       if (upstream?.body && typeof upstream.body[Symbol.asyncIterator] === 'function') {
-        try { upstream.body.cancel?.() } catch {}
+        try { await upstream.body.cancel?.() } catch {}
       }
       if (active.get(slot) === controller) {
         active.delete(slot)

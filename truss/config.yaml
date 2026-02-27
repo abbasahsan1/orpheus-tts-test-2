@@ -69,7 +69,7 @@ model_metadata:
     - force-legacy-api-non-openai-compatible
 
 requirements:
-  - --extra-index-url https://download.pytorch.org/whl/cu128
-  - torch==2.7.1
+  - "transformers>=4.47.0"
+  - "huggingface-hub>=0.24.0"
   - snac==1.2.1
   - batched==0.1.4

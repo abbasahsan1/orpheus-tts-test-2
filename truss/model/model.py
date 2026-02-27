@@ -13,11 +13,10 @@ High-performance TTS with:
 Target: 16-24 concurrent real-time streams on H100 MIG 40GB
 """
 
-from __future__ import annotations
-
 import asyncio
 import logging
 import re
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -86,7 +85,7 @@ class SnacModelBatched:
 
             t = time.time()
             logging.info("Starting torch.compile warmup...")
-            for bs_size in range(1, SNAC_MAX_BATCH + 1):
+            for bs_size in range(1, max(SNAC_MAX_BATCH, 1)):
                 codes = [
                     torch.randint(1, 4096, (bs_size, 4)).to(SNAC_DEVICE),
                     torch.randint(1, 4096, (bs_size, 8)).to(SNAC_DEVICE),

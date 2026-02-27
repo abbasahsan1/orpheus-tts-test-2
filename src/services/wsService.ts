@@ -22,6 +22,10 @@ type StateHandler = (state: WsConnectionState) => void
 class WsService {
   private ws: WebSocket | null = null
   private _state: WsConnectionState = 'disconnected'
+  private _intentionalDisconnect = false
+  private _reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  private _reconnectAttempts = 0
+  private static MAX_RECONNECT_DELAY = 8000
 
   private msgHandlers   = new Set<MsgHandler>()
   private audioHandlers = new Set<AudioHandler>()
@@ -42,6 +46,8 @@ class WsService {
 
   connect() {
     if (this._state === 'connected' || this._state === 'connecting') return
+    this._intentionalDisconnect = false
+    this._clearReconnectTimer()
 
     this.setState('connecting')
 
@@ -54,7 +60,10 @@ class WsService {
       if (typeof event.data === 'string') {
         try {
           const msg = JSON.parse(event.data) as WsInboundMessage
-          if (msg.type === 'connected') this.setState('connected')
+          if (msg.type === 'connected') {
+            this._reconnectAttempts = 0
+            this.setState('connected')
+          }
           this.msgHandlers.forEach((h) => h(msg))
         } catch {
           // Ignore malformed frames
@@ -69,6 +78,7 @@ class WsService {
           if (usableLen === 0) return
           const slot = new DataView(buf).getUint16(0, true)
           const pcm  = new Int16Array(buf, 2, usableLen / 2)
+          console.log(`[ws] binary: ${buf.byteLength}B slot=${slot} samples=${pcm.length} handlers=${this.audioHandlers.size}`)
           this.audioHandlers.forEach((h) => h(slot, pcm))
         } catch {
           // Skip malformed binary frames
@@ -76,15 +86,43 @@ class WsService {
       }
     }
 
-    ws.onerror = () => this.setState('error')
+    ws.onerror = () => {
+      this.setState('error')
+    }
 
     ws.onclose = () => {
       this.ws = null
-      if (this._state !== 'error') this.setState('disconnected')
+      if (this._intentionalDisconnect) {
+        this.setState('disconnected')
+      } else {
+        // Auto-reconnect with exponential backoff
+        this.setState('disconnected')
+        this._scheduleReconnect()
+      }
     }
   }
 
+  private _clearReconnectTimer() {
+    if (this._reconnectTimer) {
+      clearTimeout(this._reconnectTimer)
+      this._reconnectTimer = null
+    }
+  }
+
+  private _scheduleReconnect() {
+    this._clearReconnectTimer()
+    const delay = Math.min(1000 * Math.pow(2, this._reconnectAttempts), WsService.MAX_RECONNECT_DELAY)
+    this._reconnectAttempts++
+    console.log(`[ws] reconnecting in ${delay}ms (attempt ${this._reconnectAttempts})`)
+    this._reconnectTimer = setTimeout(() => {
+      this._reconnectTimer = null
+      this.connect()
+    }, delay)
+  }
+
   disconnect() {
+    this._intentionalDisconnect = true
+    this._clearReconnectTimer()
     this.ws?.close()
     this.ws = null
     this.setState('disconnected')
