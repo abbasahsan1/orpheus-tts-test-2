@@ -14,6 +14,9 @@ export function StatsPanel({ sessions }: Props) {
     const ttfbs = done.map((s) => s.metrics.timeToFirstByteMs!)
     const totals = done.map((s) => s.metrics.totalTimeMs ?? 0)
     const errors = sessions.filter((s) => s.error).length
+    const tpsList = done
+      .filter((s) => s.metrics.tokensPerSecond != null)
+      .map((s) => s.metrics.tokensPerSecond!)
 
     const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length
     const min = (arr: number[]) => Math.min(...arr)
@@ -34,6 +37,9 @@ export function StatsPanel({ sessions }: Props) {
       avgTotal: Math.round(avg(totals)),
       minTotal: Math.round(min(totals)),
       maxTotal: Math.round(max(totals)),
+      avgTps: tpsList.length ? Math.round(avg(tpsList) * 10) / 10 : null,
+      minTps: tpsList.length ? Math.round(min(tpsList) * 10) / 10 : null,
+      maxTps: tpsList.length ? Math.round(max(tpsList) * 10) / 10 : null,
     }
   }, [sessions])
 
@@ -86,6 +92,24 @@ export function StatsPanel({ sessions }: Props) {
           <span className={styles.statValue}>{(stats.maxTotal / 1000).toFixed(2)}s</span>
           <span className={styles.statLabel}>Max Total</span>
         </div>
+        {stats.avgTps != null && (
+          <div className={styles.stat}>
+            <span className={styles.statValue}>{stats.avgTps}</span>
+            <span className={styles.statLabel}>Avg tok/s</span>
+          </div>
+        )}
+        {stats.minTps != null && (
+          <div className={styles.stat}>
+            <span className={styles.statValue}>{stats.minTps}</span>
+            <span className={styles.statLabel}>Min tok/s</span>
+          </div>
+        )}
+        {stats.maxTps != null && (
+          <div className={styles.stat}>
+            <span className={styles.statValue}>{stats.maxTps}</span>
+            <span className={styles.statLabel}>Max tok/s</span>
+          </div>
+        )}
       </div>
     </div>
   )

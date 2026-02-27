@@ -25,6 +25,7 @@ const DEFAULT_METRICS: StreamingMetrics = {
   totalTimeMs: null,
   audioDurationMs: null,
   bytesReceived: 0,
+  tokensPerSecond: null,
 }
 
 function int16ToFloat32(buf: Int16Array): Float32Array {
@@ -62,6 +63,7 @@ export function useWebSocketStressTest() {
     const ids = Array.from({ length: concurrency }, (_, i) => `wss-${Date.now()}-${i + 1}`)
     const pcmChunks: Float32Array[][] = Array.from({ length: concurrency }, () => [])
     const bytesReceived: number[] = Array.from({ length: concurrency }, () => 0)
+    const startTimes: number[] = Array.from({ length: concurrency }, () => Date.now())
     let completedCount = 0
 
     setSessions(
@@ -111,6 +113,10 @@ export function useWebSocketStressTest() {
           const blob = buildWavFromChunks(pcmChunks[slot])
           const url  = URL.createObjectURL(blob)
           urlsRef.current.push(url)
+          const tpsMs = totalMs > 0 ? totalMs : (Date.now() - startTimes[slot])
+          const tokensPerSecond = bytesReceived[slot] > 0 && tpsMs > 0
+            ? Math.round((bytesReceived[slot] / 8192 * 7) / (tpsMs / 1000) * 10) / 10
+            : null
           setSessions((prev) =>
             prev.map((s, i) =>
               i === slot
@@ -123,6 +129,7 @@ export function useWebSocketStressTest() {
                       totalTimeMs: totalMs,
                       audioDurationMs,
                       bytesReceived: s.metrics.bytesReceived,
+                      tokensPerSecond,
                     },
                   }
                 : s,
@@ -146,6 +153,7 @@ export function useWebSocketStressTest() {
     // ── Fire all requests simultaneously (true parallel) ─────────────────────
     // No stagger — TRT-LLM max_utilization scheduler handles concurrent batching
     for (let slot = 0; slot < concurrency; slot++) {
+      startTimes[slot] = Date.now()
       wsService.send({ type: 'generate', slot, ...params })
     }
   }, [concurrency])
@@ -153,14 +161,14 @@ export function useWebSocketStressTest() {
   const stopAll = useCallback(() => {
     runIdRef.current = ''
     _cleanup()
-    for (let slot = 0; slot < 32; slot++) wsService.send({ type: 'abort', slot })
+    for (let slot = 0; slot < Math.max(concurrency, 1); slot++) wsService.send({ type: 'abort', slot })
     setIsRunning(false)
     setSessions((prev) =>
       prev.map((s) =>
         s.state === 'playing' || s.state === 'connecting' ? { ...s, state: 'stopped' } : s,
       ),
     )
-  }, [])
+  }, [concurrency])
 
   const clear = useCallback(() => {
     runIdRef.current = ''

@@ -1,14 +1,15 @@
 :root {
-  --bg-base: #11111b;
-  --bg-surface: #1e1e2e;
-  --bg-deep: #0d0d16;
-  --bg-hover: #2a2a3c;
-  --border: #313244;
-  --accent: #89b4fa;
-  --accent-green: #a6e3a1;
-  --text-primary: #cdd6f4;
-  --text-secondary: #bac2de;
-  --text-muted: #a6adc8;
+  --bg-base: #ffffff;
+  --bg-surface: #f8fafc;
+  --bg-deep: #f1f5f9;
+  --bg-hover: #e8edf3;
+  --border: #e2e8f0;
+  --accent: #4f46e5;
+  --accent-green: #16a34a;
+  --accent-red: #dc2626;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
 }
 
 .app {
@@ -50,12 +51,12 @@
 
 .tabActive {
   background: var(--accent);
-  color: var(--bg-base);
+  color: #ffffff;
 }
 
 .tabActive:hover {
   background: var(--accent);
-  color: var(--bg-base);
+  color: #ffffff;
 }
 
 /* Connection bar */
@@ -182,6 +183,34 @@
   letter-spacing: 0.04em;
 }
 
+/* Live streaming badge shown in the title when state = playing */
+.liveStreamBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(22, 163, 74, 0.10);
+  border: 1px solid var(--accent-green);
+  color: var(--accent-green);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+  animation: pulseLive 1.2s ease-in-out infinite;
+}
+
+@keyframes pulseLive {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Animated metric value when live */
+.metricLive {
+  color: var(--accent-green) !important;
+  animation: pulseLive 1.4s ease-in-out infinite;
+}
+
 .resultActions {
   display: flex;
   gap: 8px;
@@ -219,9 +248,9 @@
 
 .resultError {
   font-size: 0.8rem;
-  color: #f38ba8;
+  color: var(--accent-red);
   padding: 8px 12px;
-  background: rgba(243, 139, 168, 0.08);
+  background: rgba(220, 38, 38, 0.06);
   border-radius: 6px;
 }
 

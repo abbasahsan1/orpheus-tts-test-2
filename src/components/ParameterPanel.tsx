@@ -12,15 +12,17 @@ interface Props {
   params: TTSParams
   isLoading: boolean
   playbackRate: number
+  streamingMode: boolean
   onUpdate: <K extends keyof TTSParams>(key: K, value: TTSParams[K]) => void
   onPlaybackRateChange: (rate: number) => void
+  onStreamingModeChange: (streaming: boolean) => void
   onReset: () => void
   onGenerate: () => void
 }
 
 export function ParameterPanel({
-  params, isLoading, playbackRate,
-  onUpdate, onPlaybackRateChange, onReset, onGenerate,
+  params, isLoading, playbackRate, streamingMode,
+  onUpdate, onPlaybackRateChange, onStreamingModeChange, onReset, onGenerate,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -166,6 +168,26 @@ export function ParameterPanel({
           <span>2.0×</span>
         </div>
         <p className={styles.hint}>Client-side only — does not affect generation.</p>
+      </div>
+
+      {/* Streaming Mode */}
+      <div className={styles.field}>
+        <div className={styles.labelRow}>
+          <label className={styles.label}>Playback Mode</label>
+          <button
+            type="button"
+            className={`${styles.streamingToggle} ${streamingMode ? styles.streamingToggleOn : styles.streamingToggleOff}`}
+            onClick={() => onStreamingModeChange(!streamingMode)}
+            aria-pressed={streamingMode}
+          >
+            {streamingMode ? '▶ Real-time Streaming' : '⏸ Buffered (play after done)'}
+          </button>
+        </div>
+        <p className={styles.hint}>
+          {streamingMode
+            ? 'Audio plays immediately as it arrives — lowest perceived latency.'
+            : 'All audio is buffered first, then played as one continuous clip.'}
+        </p>
       </div>
 
       {/* Generate */}

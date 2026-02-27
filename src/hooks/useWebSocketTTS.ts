@@ -23,6 +23,7 @@ const DEFAULT_METRICS: StreamingMetrics = {
   totalTimeMs: null,
   audioDurationMs: null,
   bytesReceived: 0,
+  tokensPerSecond: null,
 }
 
 function int16ToFloat32(buf: Int16Array): Float32Array {
@@ -48,6 +49,7 @@ export function useWebSocketTTS() {
   const jitterBufRef    = useRef<Float32Array[]>([])
   const jitterLenRef    = useRef(0)
   const playbackRateRef = useRef(1.0)
+  const firstByteTimeRef = useRef<number | null>(null)
 
   // 200ms at 24kHz — flush threshold for jitter buffer
   const JITTER_MIN = 4800
@@ -87,7 +89,7 @@ export function useWebSocketTTS() {
     unsubRefs.current = []
   }
 
-  const start = useCallback((params: TTSParams, playbackRate = 1.0) => {
+  const start = useCallback((params: TTSParams, playbackRate = 1.0, streamingPlayback = true) => {
     const id = `ws-${Date.now()}`
     sessionIdRef.current = id
     playbackRateRef.current = playbackRate
@@ -104,6 +106,7 @@ export function useWebSocketTTS() {
     bytesRef.current = 0
     jitterBufRef.current = []
     jitterLenRef.current = 0
+    firstByteTimeRef.current = null
 
     setSession({ id, state: 'connecting', metrics: DEFAULT_METRICS, audioUrl: null, error: null })
 
@@ -114,19 +117,29 @@ export function useWebSocketTTS() {
         console.log(`[tts] audio chunk: slot=${slot} samples=${pcmInt16.length}`)
         const samples = int16ToFloat32(pcmInt16)
 
+        // Track first-byte time for TPS calculation
+        if (firstByteTimeRef.current === null) {
+          firstByteTimeRef.current = Date.now()
+        }
+
         pcmChunksRef.current.push(samples)
         bytesRef.current += samples.length * 2
 
         jitterBufRef.current.push(samples)
         jitterLenRef.current += samples.length
-        if (jitterLenRef.current >= JITTER_MIN) {
+        if (streamingPlayback && jitterLenRef.current >= JITTER_MIN) {
           _flushJitterBuf()
         }
+
+        // Live TPS: 7 audio tokens = 1 SNAC frame = 4096 samples = 8192 bytes
+        const elapsedSec = (Date.now() - firstByteTimeRef.current!) / 1000
+        const tokenCount = (bytesRef.current / 8192) * 7
+        const liveTps = elapsedSec > 0.1 ? Math.round(tokenCount / elapsedSec) : null
 
         setSession((prev) => ({
           ...prev,
           state: 'playing',
-          metrics: { ...prev.metrics, bytesReceived: bytesRef.current },
+          metrics: { ...prev.metrics, bytesReceived: bytesRef.current, tokensPerSecond: liveTps },
         }))
       }),
     )
@@ -156,6 +169,7 @@ export function useWebSocketTTS() {
               totalTimeMs: msg.totalMs,
               audioDurationMs: msg.audioDurationMs,
               bytesReceived: prev.metrics.bytesReceived,
+              tokensPerSecond: prev.metrics.tokensPerSecond,
             },
           }))
         } else if (msg.type === 'error' && msg.slot === 0) {

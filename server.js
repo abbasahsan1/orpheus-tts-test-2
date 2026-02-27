@@ -31,18 +31,21 @@
 
 import 'dotenv/config'
 import { createServer } from 'http'
-import https from 'https'
 import express from 'express'
 import { WebSocketServer } from 'ws'
+import { Agent, fetch as undiciFetch } from 'undici'
 
-// ─── HTTPS Agent with Connection Pooling ────────────────────────────────────────
-// Reuses TCP/TLS connections across all upstream Baseten requests.
-// Critical for low TTFB under high concurrency – avoids repeated TLS handshakes.
-const httpsAgent = new https.Agent({
-  keepAlive: true,
-  maxSockets: Infinity,
-  maxFreeSockets: 64,
-  timeout: 120_000,
+// ─── Connection Pool (undici Agent) ─────────────────────────────────────────────
+// Maintains a persistent pool of TCP/TLS connections to Baseten.
+// This eliminates the TLS handshake overhead on every request (~200ms saved).
+// undici supports HTTP/1.1 keep-alive and HTTP/2 multiplexing transparently.
+const connectionPool = new Agent({
+  connections: 256,          // max parallel connections per origin (matches max model concurrency)
+  pipelining: 1,             // keep-alive (no HTTP/2 pipelining on Baseten edge)
+  keepAliveTimeout: 60_000,  // keep idle connections alive for 60s
+  keepAliveMaxTimeout: 300_000,
+  headersTimeout: 0,         // no headers timeout — model may take time to start streaming
+  bodyTimeout: 0,            // no body timeout — long audio streams
 })
 
 // ─── Configuration ──────────────────────────────────────────────────────────────
@@ -71,18 +74,29 @@ app.get('/api/health', (_req, res) => {
 })
 
 // ─── Connection Warm-up ─────────────────────────────────────────────────────────
-// Pre-establish TCP/TLS connection to Baseten at startup to avoid cold-start
-// latency on the first real request.
+// Pre-establish a pool of TCP/TLS connections to Baseten at startup.
+// For stress tests with N concurrent requests we need N pre-warmed connections —
+// TLS handshake per new connection adds ~150-200ms to the first request on each.
+// We fire WARMUP_POOL_SIZE pings concurrently so undici establishes that many
+// physical connections before the first real request arrives.
+
+const WARMUP_POOL_SIZE = 24   // cover most stress-test concurrency levels
 
 async function warmupConnection() {
   try {
-    const resp = await fetch(HEALTH_URL, {
-      method: 'GET',
-      headers: { Authorization: `Api-Key ${API_KEY}` },
-    })
-    console.log(`[warmup] Baseten health check: ${resp.status}`)
+    const pings = Array.from({ length: WARMUP_POOL_SIZE }, (_, i) =>
+      undiciFetch(HEALTH_URL, {
+        method: 'GET',
+        headers: { Authorization: `Api-Key ${API_KEY}` },
+        dispatcher: connectionPool,
+      })
+        .then((r) => { console.log(`[warmup] conn ${i + 1}: HTTP ${r.status}`) })
+        .catch((e) => console.warn(`[warmup] conn ${i + 1} failed: ${e.message}`)),
+    )
+    await Promise.all(pings)
+    console.log(`[warmup] ${WARMUP_POOL_SIZE} connections pre-established in pool`)
   } catch (err) {
-    console.warn(`[warmup] Baseten health check failed (model may be cold): ${err.message}`)
+    console.warn(`[warmup] Warmup failed (model may be cold): ${err.message}`)
   }
 }
 
@@ -182,7 +196,7 @@ wss.on('connection', (ws) => {
     console.log(`[ws] slot ${slot} → POST ${BASETEN_URL} voice=${safeVoice} prompt="${prompt.slice(0, 60)}"`)
 
     try {
-      upstream = await fetch(BASETEN_URL, {
+      upstream = await undiciFetch(BASETEN_URL, {
         method: 'POST',
         headers: {
           Authorization: `Api-Key ${API_KEY}`,
@@ -191,6 +205,7 @@ wss.on('connection', (ws) => {
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
+        dispatcher: connectionPool,
       })
 
       console.log(`[ws] slot ${slot} ← HTTP ${upstream.status} (${Date.now() - startTime}ms)`)

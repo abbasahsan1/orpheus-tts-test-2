@@ -35,6 +35,7 @@ export function StreamingPlayer({ session, index, onAbort }: Props) {
   const bytesKB = session.metrics.bytesReceived > 0
     ? `${(session.metrics.bytesReceived / 1024).toFixed(1)} KB`
     : '—'
+  const tps = session.metrics.tokensPerSecond != null ? `${session.metrics.tokensPerSecond}` : '—'
 
   return (
     <div className={styles.card}>
@@ -67,6 +68,10 @@ export function StreamingPlayer({ session, index, onAbort }: Props) {
         <div className={styles.metric}>
           <span className={styles.metricValue}>{audio}</span>
           <span className={styles.metricLabel}>Audio</span>
+        </div>
+        <div className={styles.metric}>
+          <span className={styles.metricValue}>{tps}</span>
+          <span className={styles.metricLabel}>tok/s</span>
         </div>
       </div>
 

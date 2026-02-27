@@ -40,9 +40,9 @@ export function StressTestPanel({ params }: Props) {
               className={styles.concurrencyInput}
               value={concurrency}
               min={1}
-              max={32}
+              max={256}
               disabled={isRunning}
-              onChange={(e) => setConcurrency(Math.max(1, Math.min(32, Number(e.target.value))))}
+              onChange={(e) => setConcurrency(Math.max(1, Number(e.target.value)))}
             />
           </div>
           {!isRunning ? (

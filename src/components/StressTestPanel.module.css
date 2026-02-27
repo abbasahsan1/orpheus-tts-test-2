@@ -65,8 +65,8 @@
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #a6e3a1 0%, #94e2d5 100%);
-  color: #1e1e2e;
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  color: #ffffff;
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
@@ -85,10 +85,10 @@
 
 .stopBtn {
   padding: 8px 16px;
-  border: 1px solid rgba(243, 139, 168, 0.4);
+  border: 1px solid rgba(220, 38, 38, 0.35);
   border-radius: 8px;
-  background: rgba(243, 139, 168, 0.12);
-  color: #f38ba8;
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
@@ -96,7 +96,7 @@
 }
 
 .stopBtn:hover {
-  background: rgba(243, 139, 168, 0.22);
+  background: rgba(220, 38, 38, 0.16);
 }
 
 .clearBtn {
@@ -132,7 +132,7 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #89b4fa, #cba6f7);
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
   border-radius: 3px;
   transition: width 0.2s ease-out;
 }

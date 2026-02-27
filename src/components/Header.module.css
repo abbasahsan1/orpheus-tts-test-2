@@ -1,7 +1,7 @@
 .header {
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+  background: #ffffff;
   padding: 1.5rem 2rem;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .inner {
@@ -20,27 +20,27 @@
 
 .logoIcon {
   font-size: 1.75rem;
-  color: #a78bfa;
+  color: #4f46e5;
 }
 
 .logoText {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #fff;
+  color: #0f172a;
   letter-spacing: -0.02em;
 }
 
 .version {
   font-size: 0.75rem;
-  color: #a5b4fc;
-  background: rgba(99,102,241,0.2);
+  color: #4f46e5;
+  background: rgba(79, 70, 229, 0.08);
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   font-weight: 600;
 }
 
 .subtitle {
-  color: #c7d2fe;
+  color: #64748b;
   font-size: 0.85rem;
   margin: 0;
 }

@@ -38,6 +38,8 @@ export interface StreamingMetrics {
   totalTimeMs: number | null
   audioDurationMs: number | null
   bytesReceived: number
+  /** Live token generation speed: audio tokens/second (7 tokens = 1 SNAC frame = 8192 bytes PCM) */
+  tokensPerSecond: number | null
 }
 
 export interface StreamingSession {

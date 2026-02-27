@@ -12,6 +12,7 @@ type Tab = 'single' | 'stress'
 export default function App() {
   const [tab, setTab] = useState<Tab>('single')
   const [playbackRate, setPlaybackRate] = useState(1.0)
+  const [streamingMode, setStreamingMode] = useState(true)   // true=real-time, false=buffered
   const { params, update, reset }       = useTTSParams()
   const { connState, connect, disconnect } = useWsConnection()
   const { session, start, stop, clear }  = useWebSocketTTS()
@@ -23,7 +24,7 @@ export default function App() {
 
   const handleGenerate = () => {
     if (!params.prompt.trim() || !isConnected) return
-    start(params, playbackRate)
+    start(params, playbackRate, streamingMode)
   }
 
   const handleDownload = () => {
@@ -42,6 +43,7 @@ export default function App() {
   const ttfb  = session.metrics.timeToFirstByteMs != null ? `${session.metrics.timeToFirstByteMs}ms` : '—'
   const total = session.metrics.totalTimeMs != null ? `${(session.metrics.totalTimeMs / 1000).toFixed(2)}s` : '—'
   const audio = session.metrics.audioDurationMs != null ? `${(session.metrics.audioDurationMs / 1000).toFixed(2)}s` : '—'
+  const tps   = session.metrics.tokensPerSecond != null ? `${session.metrics.tokensPerSecond} tok/s` : '—'
 
   return (
     <div className={styles.app}>
@@ -85,8 +87,10 @@ export default function App() {
             params={params}
             isLoading={session.state === 'connecting' || session.state === 'playing'}
             playbackRate={playbackRate}
+            streamingMode={streamingMode}
             onUpdate={update}
             onPlaybackRateChange={setPlaybackRate}
+            onStreamingModeChange={setStreamingMode}
             onReset={reset}
             onGenerate={handleGenerate}
           />
@@ -96,7 +100,12 @@ export default function App() {
               <div className={styles.resultCard}>
                 <h3 className={styles.resultTitle}>
                   {session.state === 'connecting' ? 'Connecting…'
-                    : session.state === 'playing' ? 'Streaming…'
+                    : session.state === 'playing' ? (
+                      <span>
+                        Streaming
+                        <span className={styles.liveStreamBadge}>● LIVE</span>
+                      </span>
+                    )
                     : session.state === 'done' ? 'Complete'
                     : session.state === 'error' ? 'Error'
                     : 'Stopped'}
@@ -115,6 +124,10 @@ export default function App() {
                   <div className={styles.resultMetric}>
                     <span className={styles.resultMetricValue}>{audio}</span>
                     <span className={styles.resultMetricLabel}>Audio</span>
+                  </div>
+                  <div className={styles.resultMetric}>
+                    <span className={`${styles.resultMetricValue} ${session.state === 'playing' ? styles.metricLive : ''}`}>{tps}</span>
+                    <span className={styles.resultMetricLabel}>Speed</span>
                   </div>
                 </div>
 
